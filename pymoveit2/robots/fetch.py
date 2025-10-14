@@ -25,7 +25,7 @@ def base_link_name() -> str:
 
 
 def end_effector_name() -> str:
-    return "wrist_roll_joint"
+    return "wrist_roll_link"
 
 
 def gripper_joint_names() -> List[str]:
