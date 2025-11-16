@@ -119,6 +119,7 @@ class MoveIt2Gripper(MoveIt2):
         # Indices of gripper joint within the joint state message topic.
         # It is assumed that the order of these does not change during execution.
         self.__gripper_joint_indices: Optional[List[int]] = None
+        self.__start_joint_state = None
 
     def __call__(self):
         """
@@ -126,6 +127,9 @@ class MoveIt2Gripper(MoveIt2):
         """
 
         self.toggle()
+
+    def set_start_joint_state(self, joint_state=None):
+        self.__start_joint_state = joint_state
 
     def toggle(self):
         """
@@ -150,7 +154,8 @@ class MoveIt2Gripper(MoveIt2):
             self.__open_without_planning()
         else:
             self.move_to_configuration(
-                joint_positions=self.__open_gripper_joint_positions
+                joint_positions=self.__open_gripper_joint_positions,
+                start_joint_state=self.__start_joint_state,
             )
 
     def close(self, skip_if_noop: bool = False):
@@ -166,7 +171,8 @@ class MoveIt2Gripper(MoveIt2):
             self.__close_without_planning()
         else:
             self.move_to_configuration(
-                joint_positions=self.__closed_gripper_joint_positions
+                joint_positions=self.__closed_gripper_joint_positions,
+                start_joint_state=self.__start_joint_state,
             )
 
     def move_to_position(self, position: float):

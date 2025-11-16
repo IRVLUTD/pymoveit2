@@ -135,6 +135,7 @@ class GripperCommand:
         self.__is_motion_requested = False
         self.__is_executing = False
         self.__wait_until_executed_rate = self._node.create_rate(1000.0)
+        self.__start_joint_state = None
 
     def __call__(self):
         """
@@ -142,6 +143,11 @@ class GripperCommand:
         """
 
         self.toggle()
+
+
+    def set_start_joint_state(self, joint_state=None):
+        self.__start_joint_state = joint_state
+
 
     def toggle(self):
         """

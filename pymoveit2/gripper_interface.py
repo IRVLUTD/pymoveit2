@@ -96,6 +96,19 @@ class GripperInterface(MoveIt2Gripper, GripperCommand):
 
         self.toggle()
 
+
+    def set_start_joint_state(self, joint_state=None):
+
+        if self._interface is None:
+            self.__determine_interface()
+        if self._interface is None:
+            self._node.get_logger().error(
+                f"Unable to close the gripper because the appropriate interface cannot be determined."
+            )
+            return
+
+        self._interface.set_start_joint_state(self=self, joint_state=joint_state)        
+
     def toggle(self):
         """
         Toggles the gripper between open and closed state.

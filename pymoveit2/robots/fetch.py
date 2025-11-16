@@ -3,8 +3,8 @@ from typing import List
 MOVE_GROUP_ARM: str = "arm_with_torso"
 MOVE_GROUP_GRIPPER: str = "gripper"
 
-OPEN_GRIPPER_JOINT_POSITIONS: List[float] = [0.05, 0.05]
-CLOSED_GRIPPER_JOINT_POSITIONS: List[float] = [0.0, 0.0]
+OPEN_GRIPPER_JOINT_POSITIONS: List[float] = [0.049, 0.049]
+CLOSED_GRIPPER_JOINT_POSITIONS: List[float] = [0.001, 0.001]
 
 
 def joint_names() -> List[str]:

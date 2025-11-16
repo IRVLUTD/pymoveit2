@@ -348,6 +348,7 @@ class MoveIt2:
         weight_orientation: float = 1.0,
         cartesian_max_step: float = 0.0025,
         cartesian_fraction_threshold: float = 0.0,
+        start_joint_state: Optional[Union[JointState, List[float]]] = None,
     ):
         """
         Plan and execute motion based on previously set goals. Optional arguments can be
@@ -434,8 +435,84 @@ class MoveIt2:
                     cartesian=cartesian,
                     max_step=cartesian_max_step,
                     cartesian_fraction_threshold=cartesian_fraction_threshold,
+                    start_joint_state=start_joint_state,
                 )
             )
+
+
+    def plan_to_pose(
+        self,
+        pose: Optional[Union[PoseStamped, Pose]] = None,
+        position: Optional[Union[Point, Tuple[float, float, float]]] = None,
+        quat_xyzw: Optional[
+            Union[Quaternion, Tuple[float, float, float, float]]
+        ] = None,
+        target_link: Optional[str] = None,
+        frame_id: Optional[str] = None,
+        tolerance_position: float = 0.001,
+        tolerance_orientation: float = 0.001,
+        weight_position: float = 1.0,
+        cartesian: bool = False,
+        weight_orientation: float = 1.0,
+        cartesian_max_step: float = 0.0025,
+        cartesian_fraction_threshold: float = 0.0,
+        start_joint_state: Optional[Union[JointState, List[float]]] = None,
+    ):
+        """
+        Plan and execute motion based on previously set goals. Optional arguments can be
+        passed in to internally use `set_pose_goal()` to define a goal during the call.
+        """
+
+        if isinstance(pose, PoseStamped):
+            pose_stamped = pose
+        elif isinstance(pose, Pose):
+            pose_stamped = PoseStamped(
+                header=Header(
+                    stamp=self._node.get_clock().now().to_msg(),
+                    frame_id=(
+                        frame_id if frame_id is not None else self.__base_link_name
+                    ),
+                ),
+                pose=pose,
+            )
+        else:
+            if not isinstance(position, Point):
+                position = Point(
+                    x=float(position[0]), y=float(position[1]), z=float(position[2])
+                )
+            if not isinstance(quat_xyzw, Quaternion):
+                quat_xyzw = Quaternion(
+                    x=float(quat_xyzw[0]),
+                    y=float(quat_xyzw[1]),
+                    z=float(quat_xyzw[2]),
+                    w=float(quat_xyzw[3]),
+                )
+            pose_stamped = PoseStamped(
+                header=Header(
+                    stamp=self._node.get_clock().now().to_msg(),
+                    frame_id=(
+                        frame_id if frame_id is not None else self.__base_link_name
+                    ),
+                ),
+                pose=Pose(position=position, orientation=quat_xyzw),
+            )
+
+        # Plan via MoveIt 2 and then execute directly with the controller
+        trajectory = self.plan(
+            position=pose_stamped.pose.position,
+            quat_xyzw=pose_stamped.pose.orientation,
+            frame_id=pose_stamped.header.frame_id,
+            target_link=target_link,
+            tolerance_position=tolerance_position,
+            tolerance_orientation=tolerance_orientation,
+            weight_position=weight_position,
+            weight_orientation=weight_orientation,
+            cartesian=cartesian,
+            max_step=cartesian_max_step,
+            cartesian_fraction_threshold=cartesian_fraction_threshold,
+            start_joint_state=start_joint_state,
+        )
+        return trajectory
 
     def move_to_configuration(
         self,
@@ -443,6 +520,7 @@ class MoveIt2:
         joint_names: Optional[List[str]] = None,
         tolerance: float = 0.001,
         weight: float = 1.0,
+        start_joint_state: Optional[Union[JointState, List[float]]] = None,
     ):
         """
         Plan and execute motion based on previously set goals. Optional arguments can be
@@ -484,6 +562,7 @@ class MoveIt2:
                     joint_names=joint_names,
                     tolerance_joint_position=tolerance,
                     weight_joint_position=weight,
+                    start_joint_state=start_joint_state,
                 )
             )
 
@@ -647,6 +726,7 @@ class MoveIt2:
                 )
             else:
                 # start_joint_state is a list of positions
+                print('set start joint state')
                 self.__move_action_goal.request.start_state.joint_state = (
                     init_joint_state(
                         joint_names=self.__joint_names,
